@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="xyz.itwill.mapper.SpaceManageMapper">
+
+	<resultMap type="Space" id="spaceResultMap">
+	 	<id column="s_no" property="sNo"/>
+		<result column="s_name" property="sName"/>
+		<result column="s_price" property="sPrice"/>
+		<result column="s_cate" property="sCate"/>
+		<result column="s_info" property="sInfo"/>
+		<result column="s_tag" property="sTag"/>
+		<result column="s_guide" property="sGuide"/>
+		<result column="s_person" property="sPerson"/>
+		<result column="s_notice" property="sNotice"/>
+		<result column="s_img" property="sImg"/>
+		<result column="s_img2" property="sImg2"/>
+		<result column="s_map" property="sMap"/>
+		<result column="s_detail_map" property="sDetailMap"/>
+		<result column="s_location" property="sLocation"/>
+		<result column="s_parking" property="sParking"/>
+		<result column="s_elevator" property="sElevator"/>
+		<result column="s_refund" property="sRefund"/>
+		<result column="s_heart" property="sHeart"/>
+		<result column="s_pstatus" property="sPstatus"/>
+		<result column="s_date" property="sDate"/>
+		<result column="s_pdate" property="sPdate"/>
+		<result column="s_hid" property="sHid"/>
+	 </resultMap>
+	 
+	 <resultMap type="Host" id="hostResultMap">
+	 	<id column="h_id" property="hId"/>
+		<result column="h_name" property="hName"/>
+		<result column="h_email" property="hEmail"/>
+		<result column="h_phone" property="hPhone"/>
+		<result column="h_spacename" property="hSpacename"/>
+		<result column="h_ceoname" property="hCeoname"/>
+		<result column="h_num" property="hNum"/>
+		<result column="h_account" property="hAccount"/>
+		<result column="h_bank" property="hBank"/>
+		<result column="h_accountname" property="hAccountname"/>
+	</resultMap>
+	
+	
+	<resultMap type="SpaceHost" id="spaceHostResultMap">
+		<association property="host" resultMap="hostResultMap"/>
+		<collection property="spaceList" resultMap="spaceResultMap"/>
+	</resultMap>
+	
+	
+	<!-- 공간 등록 - 삽입 -->
+	<insert id="insertSpace">
+		<selectKey resultType="int" keyProperty="sNo" order="BEFORE">
+			select space_seq.nextval from dual
+		</selectKey>
+		insert into space values
+			(#{sNo}, #{sName}, #{sPrice}, #{sCate}, #{sInfo}, #{sTag}, #{sGuide}, #{sPerson}, #{sNotice},
+			#{sImg}, #{sImg2}, #{sMap}, #{sDetailMap}, #{sLocation}, #{sParking}, #{sElevator}, #{sRefund},
+			#{sHeart}, 1, sysdate, #{sPdate}, #{sHid}) 
+	</insert>
+	
+	<select id="selectSpaceInfo" parameterType="int" resultType="Space">
+		select * from space where s_no=#{sNo}
+	</select>
+	
+	<!-- 공간정보 관리 페이지 -->
+	
+	
+	<!-- 호스트 아이디를 전달받아 "호스트가 등록한 공간 목록들" 검색 -->
+	<!-- 호스트(1) : 공간(N) 관계의 조인 -->
+	<select id="selectSpaceList" resultMap="spaceHostResultMap">
+		select * from host left join space on s_hid=h_id where s_hid=#{sHid} order by s_no desc
+	</select>
+	
+	
+	
+	<!-- 공간번호를 전달받아 해당 공간에 저장된 정보 검색 -->
+	<select id="selectSpaceNo" resultMap="spaceHostResultMap">
+		select * from host left join space on s_hid=h_id where s_no=#{sNo} 
+	</select>
+
+	
+	<!-- SPACE 객체를 전달받아 SPACE 테이블에 변경 --> 
+	<update id="updateSpace" parameterType="Space">
+		update space
+		<set>
+			<if test="sName!=null and sName!=''">
+				s_name=#{sName},
+			</if> 
+			<if test="sPrice!=null and sPrice!=''">
+				s_price=#{sPrice},
+			</if> 
+			<if test="sCate!=null and sCate!=''">
+				s_cate=#{sCate},
+			</if> 
+			<if test="sInfo!=null and sInfo!=''">
+				s_info=#{sInfo},
+			</if> 
+			<if test="sTag!=null and sTag!=''">
+				s_tag=#{sTag},
+			</if> 
+			<if test="sGuide!=null and sGuide!=''">
+				s_guide=#{sGuide},
+			</if> 
+			<if test="sPerson!=null and sPerson!=''">
+				sPerson=#{sPerson},
+			</if> 
+			<if test="sNotice!=null and sNotice!=''">
+				s_notice=#{sNotice},
+			</if> 
+			<if test="sImg!=null and sImg!=''">
+				s_img=#{sImg},
+			</if> 
+			<if test="sImg2!=null and sImg2!=''">
+				s_img2=#{sImg2},
+			</if> 
+			<if test="sLocation!=null and sLocation!=''">
+				s_location=#{sLocation},
+			</if> 
+			<if test="sParking!=null and sParking!=''">
+				s_parking=#{sParking},
+			</if> 
+			<if test="sElevator!=null and sElevator!=''">
+				s_elevator=#{sElevator},
+			</if> 
+		</set>
+		where s_no=#{sNo}
+	</update>
+	
+	<!-- 공간번호를 전달받아 삭제 상태로 변경 -->
+	<update id="removeSpace" parameterType="space">
+		update space
+		<set>
+			s_pstatus=0
+		</set>
+		where where s_no=#{sNo}
+	</update>
+	
+	
+	
+	
+	
+	<!-- 페이징 처리 & 검색 기능 구현 -->
+	<!-- => 게시글의 전체 갯수를 검색하여 반환하는 SQL 구문 -->
+	
+	<select id="selectSpaceManageCount" resultType="int">
+		select count(*) from space where s_hid=#{sHid}
+	</select>
+	
+	<select id="selectSpaceManagePaging" resultType="Space">
+		select * from (select rownum rn, space.* from (select * from space order by s_no desc) space) 
+				where rn between #{startRow} and #{endRow} and s_hid=#{sHid}
+	</select>
+	
+
+	<!-- 호스트 아이디를 전달받아서 해당 호스트 아이디의 공간정보가 나오도록 -->
+	<select id="selectSpace" parameterType="String" resultType="Space">
+		select * from space s_hid=#{sHid}
+	</select>
+	
+	
+
+</mapper>
+
+
+
+
+
+
+
+
+
+

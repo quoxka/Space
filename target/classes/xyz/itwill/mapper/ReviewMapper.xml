@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="xyz.itwill.mapper.ReviewMapper">
+	
+	
+		<!-- 호스트의 다른 공간을 출력 : SpaceList와 Host -->
+	<resultMap type="Review" id="reviewResultMap" autoMapping="true"/> 
+	<resultMap type="Pay" id="reserveResultMap" autoMapping="true"/> 
+	<resultMap type="Question" id="questionResultMap" autoMapping="true"/> 
+	<resultMap type="Member" id="memberResultMap" autoMapping="true"/>
+	<resultMap type="Host" id="hostResultMap" autoMapping="true"/>
+	
+	<resultMap type="SelectMember" id="SelectMemberResultMap" autoMapping="true">
+		<association property="member" resultMap="memberResultMap" autoMapping="true"/>
+		<association property="host" resultMap="hostResultMap" autoMapping="true"/>
+		<collection property="reviewList" resultMap="reviewResultMap" autoMapping="true"/>
+		<collection property="reserveList" resultMap="reserveResultMap" autoMapping="true"/>
+		<collection property="questionList" resultMap="questionResultMap" autoMapping="true"/>
+	</resultMap>	
+	
+	
+	
+	<!-- Review 테이블 -->
+		<!-- 최신글순으로 정렬하여 원하는 글범위의 notice list 검색 -->		
+	<select id="selectReviewList" resultMap="SelectMemberResultMap">
+		select * from (select rownum rn, reviewboard.* from (select * from Review order by r_no desc) reviewboard) where rn between #{startRow} and #{endRow}
+	</select>
+	
+	
+	
+	
+	
+	<!-- review 게시글 삽입 -->
+		<insert id="insertReview">
+			<selectKey resultType="int" keyProperty="rNo" order="BEFORE">
+				select review_seq.nextval from dual
+			</selectKey>
+			insert into review values(#{rNo}, #{rTitle}, #{rContent}, #{rImg},1 , #{rStar},1 ,sysdate, #{rSno}, #{rMid}, #{rPno}, #{rCount})	
+	</insert>
+	
+	
+	<!-- notice 게시글 변경 (변경값이 있을 경우에만 변경) -->
+	<update id="updateReview">
+		update notice
+		<set>
+			<if test="rTitle!=null and rTitle!=''">
+				n_title=#{ntitle},
+			</if>
+			<if test="rContent!=null and rContent!=''">
+				n_content=#{ncontent},
+			</if>
+			<if test="rStatus==0 or rStatus==1">
+				n_status=#{nstatus},
+			</if>
+			<if test="rImg!=null and rImg!=''">
+				n_img=#{nimg},
+			</if>
+			<if test="rStar!=null and rStar!=''">
+				n_star=#{nStar},
+			</if>
+			<if test="rRstatus==0 or rRstatus==1">
+				n_mstatus=#{nmstatus}
+			</if>
+		</set>
+		where r_No=#{rNo}
+	</update>
+	
+	<!-- 글번호를 전달받아 notice 게시글 삭제 -->	
+	<delete id="deleteReview">
+		delete from review where r_no=#{rNo}
+	</delete>
+	
+	
+	<!-- notice 게시글 총개수 -->	
+	<select id="selectReviewCount" resultType="int">
+		select count(*) from review where r_mid=#{rMid}
+	</select>
+	
+	
+	
+	
+	<!-- 글번호를 전달받아 notice 게시글 검색 -->		
+	<select id="selectReview" resultType="Review">
+		select * from review where r_no=#{rNo}
+	</select>
+	
+	
+	<!-- 최신글순으로 정렬하여 원하는 글범위의 notice list 검색 -->		
+	<!--  
+	
+	<select id="selectReviewList" resultType="Review">
+		select * from (select rownum rn, reviewboard.* from (select * from Review order by r_no desc) reviewboard) where rn between #{startRow} and #{endRow}
+	</select>-->
+	
+	
+	
+	
+	<!-- Review 테이블 -->
+		<!-- 최신글순으로 정렬하여 원하는 글범위의 notice list 검색 -->		
+	<select id="SelectReserveList" resultMap="SelectMemberResultMap">
+		select * from (select rownum rn, payboard.* from (select * from Pay order by p_no desc) payboard) where rn between #{startRow} and #{endRow}
+	</select>
+	
+	
+	<!-- 글번호를 전달받아 notice 게시글 삭제 -->	
+	<delete id="deleteReserve">
+		delete from pay where p_no=#{pNo}
+	</delete>
+	
+	
+	<!-- notice 게시글 총개수 -->	
+	<select id="selectReserveCount" resultType="int">
+		select count(*) from pay where p_mid=#{pMid}
+	</select>
+	
+	<!--QNA 테이블 -->
+	
+	
+	<!-- 최신글순으로 정렬하여 원하는 글범위의 notice list 검색 -->		
+	<select id="SelectQuestionList" resultMap="SelectMemberResultMap">
+		select * from (select rownum rn, questionboard.* from (select * from Question order by q_no desc) questionboard) where rn between #{startRow} and #{endRow}
+	</select>
+	
+	
+	<!-- 글번호를 전달받아 notice 게시글 삭제 -->	
+	<delete id="deleteQuestion">
+		delete from Question where q_no=#{qNo}
+	</delete>
+	
+	
+	<!-- notice 게시글 총개수 -->	
+	<select id="selectQuestionCount" resultType="int">
+		select count(*) from Question where q_mid=#{qMid}
+	</select>
+	
+	
+	<!-- Notice 게시글 총개수 -->	
+	<select id="selectHostReviewCount" resultType="int">
+		select count(*) from review
+	</select>
+	
+	<!-- Review 게시글 페이징. -->
+	<select id="selectHostReviewList" resultMap="SelectMemberResultMap">
+		select * from (select rownum rn, reviewboard.* from (select * from Review order by r_no desc) reviewboard) where rn between #{startRow} and #{endRow}
+	</select>
+	
+	
+	<!-- Reserve 게시글 총개수 -->	
+	<select id="selectHostReserveCount" resultType="int">
+		select count(*) from pay
+	</select>
+	
+	
+	<!-- Reserve 게시글 페이징. -->
+	<select id="selectHostReserveList" resultMap="SelectMemberResultMap">
+		select * from (select rownum rn, payboard.* from (select * from Pay order by p_no desc) payboard) where rn between #{startRow} and #{endRow}
+	</select>
+	
+	
+	<!-- Question 게시글 총개수 -->	
+	<select id="selectHostQuestionCount" resultType="int">
+		select count(*) from question
+	</select>
+	
+	
+	<!-- Question 게시글 페이징. -->
+	<select id="selectHostQuestionList" resultMap="SelectMemberResultMap">
+		select * from (select rownum rn, questionboard.* from (select * from Question order by q_no desc) questionboard) where rn between #{startRow} and #{endRow}
+	</select>
+	
+	
+	
+	
+	
+	<!--QNA 테이블 -->
+	<!--
+	<select id="selectHostReserveCount" resultType="int">
+		select count(*) from pay where p_hid=#{pHid}
+	</select>
+	-->
+	<!-- notice 게시글 총개수 -->	<!--
+	<select id="selectHostQuestionCount" resultType="int">
+		select count(*) from question where _hid=#{qHid}
+	</select>  -->
+	
+	
+</mapper>

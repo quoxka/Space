@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="xyz.itwill.mapper.FilterMapper">
+
+
+	
+	<!-- space 게시글 총개수 -->	
+	<select id="selectSpaceCount" resultType="int">
+		select count(*) from space
+	</select>
+	
+	
+	
+	<!-- 최신글순으로 정렬하여 원하는 글범위의 space list 검색 -->		
+	<select id="selectSpaceList" resultType="Space">
+		select * from (select rownum rn, spaceboard.* from (select * from Space order by s_no desc) spaceboard) where rn between #{startRow} and #{endRow}
+	</select>
+	
+	
+</mapper>

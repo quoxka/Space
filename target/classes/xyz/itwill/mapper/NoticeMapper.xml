@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="xyz.itwill.mapper.NoticeMapper">
+
+	<!-- notice 게시글 삽입 -->
+	<insert id="insertNotice">
+		<selectKey resultType="int" keyProperty="nno" order="BEFORE">
+			select notice_seq.nextval from dual
+		</selectKey>
+		insert into notice values(#{nno},#{ntitle},#{ncontent},#{nimg},#{nmstatus}, sysdate ,1,#{nhid})		
+	</insert>
+	
+	<!-- notice 게시글 변경 (변경값이 있을 경우에만 변경) -->
+	<update id="updateNotice">
+		update notice
+		<set>
+			<if test="ntitle!=null and ntitle!=''">
+				n_title=#{ntitle},
+			</if>
+			<if test="ncontent!=null and ncontent!=''">
+				n_content=#{ncontent},
+			</if>
+			<if test="nstatus==0 or nstatus==1">
+				n_status=#{nstatus},
+			</if>
+			<if test="nimg!=null and nimg!=''">
+				n_img=#{nimg},
+			</if>
+			<if test="nmstatus==0 or nmstatus==1">
+				n_mstatus=#{nmstatus}
+			</if>
+		</set>
+		where n_no=#{nno}
+	</update>
+	
+	<!-- 글번호를 전달받아 notice 게시글 삭제 -->	
+	<delete id="deleteNotice">
+		delete from notice where n_no=#{nno}
+	</delete>
+	
+	<!-- notice 게시글 총개수 -->	
+	<select id="selectNoticeCount" resultType="int">
+		select count(*) from notice
+	</select>
+	
+	<!-- 글번호를 전달받아 notice 게시글 검색 -->		
+	<select id="selectNotice" resultType="Notice">
+		select * from notice where n_no=#{nno}
+	</select>
+	
+	<!-- 최신글순으로 정렬하여 원하는 글범위의 notice list 검색 -->		
+	<select id="selectNoticeList" resultType="Notice">
+		select * from (select rownum rn, noticeboard.* from (select * from Notice order by n_no desc) noticeboard) where rn between #{startRow} and #{endRow}
+	</select>
+	
+	<!-- 공지사항 상태별 list 출력 -->	
+	<select id="selectstatusNoticeList" resultType="Notice">
+		select * from (select rownum rn, noticeboard.* from (select * from Notice order by n_no desc) noticeboard) where rn between #{startRow} and #{endRow} and n_mstatus=#{nmstatus} and n_status=#{nstatus}
+	</select>
+	
+		<!-- 공지사항 상태별 list 출력 -->	
+	<select id="selectorstatusNoticeList" resultType="Notice">
+		select * from (select rownum rn, noticeboard.* from (select * from Notice order by n_no desc) noticeboard) where rn between #{startRow} and #{endRow} and n_mstatus=#{nmstatus} or n_status=#{nstatus}
+	</select>
+	
+	
+	
+</mapper>

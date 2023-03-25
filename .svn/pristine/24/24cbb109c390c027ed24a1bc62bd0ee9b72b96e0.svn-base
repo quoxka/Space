@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="xyz.itwill.mapper.AdminMapper">
+	<!-- 정산 list 출력 -->	
+	<select id="selectadminPayList" resultType="Pay">
+		select * from (select rownum rn, paylist.* from (select * from pay order by p_no) paylist) where rn between #{startRow} and #{endRow}
+	</select>
+	
+	<!-- 정산 상태별 list 출력 -->	
+	<select id="selectstatusPayList" resultType="Pay">
+		select * from (select rownum rn, paylist.* from (select * from pay order by p_no) paylist) where rn between #{startRow} and #{endRow} and p_wstatus=#{pWstatus}
+	</select>
+	
+	<!-- 정산 미완료 건수 -->	
+	<select id="selectnonpayCount" resultType="int">
+		select count(*) from pay where p_wstatus=0
+	</select>
+
+	<!-- 공간 정보를 이용해서 호스트 정보 출력 (join) -->
+	<select id="selectadminHostspace" resultType="Host">
+		select * from host join space on h_id=s_hid where s_no=#{sNo}
+	</select>
+	
+	<!-- 정산상태 변경 --> 
+	<update id="updateadminPay">
+		update pay 
+		<set>
+			<if test="pWstatus==0 or pWstatus==9">
+				p_wstatus=#{pWstatus},
+			</if>
+		</set>
+		where p_no=#{pNo}
+	</update>
+	
+	
+	<resultMap type="Pay" id="payResultMap" autoMapping="true"/>
+	<resultMap type="Space" id="spaceResultMap" autoMapping="true" />
+	
+	<resultMap type="spacepay" id="spacepayResultMap" autoMapping="true">
+		<association property="Space" resultMap="spaceResultMap" autoMapping="true"/>
+		<association property="Pay" resultMap="payResultMap" autoMapping="true"/>
+	</resultMap>
+	
+	<!-- 조인 Pay(1):Space(1) 검색 이용하기 위해 이너 조인 사용 -->
+	<select id="selectpaySpace" resultMap="spacepayResultMap">
+		select * from space join pay on p_sno=s_no 
+		 where p_no=#{pNo}
+	</select>
+	
+	
+	<!-- 
+	<resultMap type="SpaceHost" id="payspaceHostResultMap" autoMapping="true">
+		<association property="host" resultMap="hostResultMap" autoMapping="true"/>
+		<association property="Space" resultMap="spaceResultMap" autoMapping="true"/>
+	</resultMap>
+	
+	<select id="selectpaySpaceHost" resultMap="payspaceHostResultMap">
+		select * from host join space on h_id=s_hid where s_no=#{sNo}
+	</select>
+	 -->
+	<!-- 조인 Host(1):Space(1) 검색 이용하기 위해 이너 조인 사용 -->
+	
+
+	
+
+	
+	
+</mapper>

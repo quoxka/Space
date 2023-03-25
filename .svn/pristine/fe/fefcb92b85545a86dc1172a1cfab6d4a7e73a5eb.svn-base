@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="xyz.itwill.mapper.HostMapper">
+	
+	<!--  호스트 정보를 전달받아 HOST 테이블에 삽입 -->
+	<insert id="insertHost">
+		insert into host (h_id, h_pw, h_name, h_email, h_phone, h_status,
+	    <trim suffixOverrides=",">
+	      <if test="hSpacename!=null">h_spacename,</if>
+	      <if test="hCeoname!=null">h_ceoname,</if>
+	      <if test="hNum!=null">h_num,</if>
+	      <if test="hAccount!=null">h_account,</if>
+	      <if test="hBank!=null">h_bank,</if>
+	      <if test="hAccountname!=null">h_accountname,</if>
+	    </trim>		
+	    ) values (#{hId},#{hPw},#{hName},#{hEmail},#{hPhone},1,
+		<trim suffixOverrides=",">
+			<if test="hSpacename!=null">#{hSpacename},</if>
+			<if test="hCeoname!=null">#{hCeoname},</if>
+			<if test="hNum!=null">#{hNum},</if>
+			<if test="hAccount!=null">#{hAccount},</if>
+			<if test="hBank!=null">#{hBank},</if>
+			<if test="hAccountname!=null">#{hAccountname},</if>
+	    </trim>
+	    )
+	</insert>
+
+
+	
+	<!-- 호스트 정보를 전달받아 HOST 테이블에 저장된 회원정보 변경 -->
+	<update id="updateHost">
+		update host 
+		<set>
+			<if test="hPw!=null and hPw!=''">
+				h_pw=#{hPw},
+			</if>
+			<if test="hName!=null and hName!=''">
+				h_name=#{hName},
+			</if>
+			<if test="hEmail!=null and hEmail!=''">
+				h_email=#{hEmail},
+			</if>		
+			<if test="hPhone!=null and hPhone!=''">
+				h_phone=#{hPhone},
+			</if>		
+			<if test="hStatus==0 or hStatus==1 or hStatus==9">
+				h_status=#{hStatus},
+			</if>
+			<if test="hSpacename!=null and hSpacename!=''">
+				h_spacename=#{hSpacename},
+			</if>
+			<if test="hCeoname!=null and hCeoname!=''">
+				h_ceoname=#{hCeoname},
+			</if>
+			<if test="hNum!=null and hNum!=''">
+				h_num=#{hNum},
+			</if>
+			<if test="hAccount!=null and hAccount!=''">
+				h_account=#{hAccount},
+			</if>
+			<if test="hBank!=null and hBank!=''">
+				h_bank=#{hBank},
+			</if>
+			<if test="hAccountname!=null and hAccountname!=''">
+				h_accountname=#{hAccountname}
+			</if>
+		</set>
+		where h_id=#{hId}
+	</update>
+
+	
+	
+	<!-- 탈퇴 처리 -->
+	<update id="removeHost">
+		update host
+		<set>
+			m_status==0
+		</set>
+		where s_hid=#{sHid}
+	</update>
+
+	<!-- 아이디를 전달받아 HOST 테이블에 저장된 해당 아이디의 회원정보 검색 -->
+	<select id="selectHost" resultType="Host">
+		select * from host where h_id=#{hId}
+	</select>
+	
+	<!-- host 총 명수 -->	
+	<select id="selectHostCount" resultType="int">
+		select count(*) from host
+	</select>
+	
+	<!-- host정보 list 출력 -->	
+	<select id="selectHostList" resultType="Host">
+		select * from (select rownum rn, hostlist.* from (select * from host order by h_id) hostlist) where rn between #{startRow} and #{endRow}
+	</select>
+	
+	<!-- host 상태별 list 출력 -->	
+	<select id="selectstatusHostList" resultType="Host">
+		select * from (select rownum rn, hostlist.* from (select * from host order by h_id) hostlist) where rn between #{startRow} and #{endRow} and h_status=#{hStatus}
+	</select>
+	
+	<!-- id를 전달받아 hostinfo 삭제 -->	
+	<delete id="deleteHost">
+		delete from host where h_id=#{hId}
+	</delete>
+	
+</mapper>

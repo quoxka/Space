@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/mvc"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc https://www.springframework.org/schema/mvc/spring-mvc.xsd
+		http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
+
+	<annotation-driven />
+
+	<resources mapping="/images/**" location="/resources/images/" />
+	<resources mapping="/css/**" location="/resources/css/" />
+	<resources mapping="/js/**" location="/resources/js/" />
+	<resources mapping="/fonts/**" location="/resources/fonts/" />
+
+	<beans:bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<beans:property name="prefix" value="/WEB-INF/views/" />
+		<beans:property name="suffix" value=".jsp" />
+		<beans:property name="order" value="3"/>
+	</beans:bean>
+
+	<beans:bean class="org.springframework.web.servlet.view.UrlBasedViewResolver">
+		<beans:property name="viewClass" value="org.springframework.web.servlet.view.tiles3.TilesView"/>
+		<beans:property name="order" value="2"/>
+	</beans:bean>
+
+	<beans:bean class="org.springframework.web.servlet.view.tiles3.TilesConfigurer">
+		<beans:property name="definitions">
+			<beans:list>
+				<beans:value>/WEB-INF/spring/spaceServlet/tiles.xml</beans:value>
+			</beans:list>
+		</beans:property>
+	</beans:bean>
+
+	<context:component-scan base-package="xyz.itwill.controller" />
+	<context:component-scan base-package="xyz.itwill.dao" />
+	<context:component-scan base-package="xyz.itwill.service" />
+	
+	<beans:bean class="org.springframework.web.multipart.commons.CommonsMultipartResolver" id="multipartResolver">
+		<beans:property name="maxUploadSize" value="20971520"/>
+		<beans:property name="defaultEncoding" value="utf-8"/>
+	</beans:bean>
+	
+	<beans:bean class="xyz.itwill.util.MemberAuthInterceptor" id="memberAuthInterceptor"/>
+	<beans:bean class="xyz.itwill.util.HostAuthInterceptor" id="hostAuthInterceptor"/>
+	<beans:bean class="xyz.itwill.util.AdminAuthInterceptor" id="adminAuthInterceptor"/>
+	
+		<interceptors>
+			<interceptor>
+				<mapping path="/member_reserve"/>
+				<mapping path="/member_review"/>
+				<mapping path="/member_qna"/>
+				<mapping path="/member_heart"/>
+				<mapping path="/member_mypage"/>
+				<!-- <mapping path="/order"/>  -->
+				<!-- <mapping path="order_go"/> -->
+				<beans:ref bean="memberAuthInterceptor"/>
+			</interceptor>
+			
+			<interceptor>
+				<mapping path="/sRegister/add"/>
+				<mapping path="/host/mypage"/>
+				<mapping path="/host/host_reserve"/>
+				<mapping path="/host/host_review"/>
+				<mapping path="/host/host_qna"/>
+				<mapping path="/host/space_manage"/>
+				<mapping path="/host/host_account"/>
+				<beans:ref bean="hostAuthInterceptor"/>
+			</interceptor>
+			
+			<interceptor>
+				<mapping path="/admin/*"/>
+				<beans:ref bean="adminAuthInterceptor"/>
+			</interceptor>
+			 
+	</interceptors>
+	
+	
+	
+</beans:beans>	 

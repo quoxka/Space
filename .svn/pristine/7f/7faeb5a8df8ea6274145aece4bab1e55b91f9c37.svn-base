@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="xyz.itwill.mapper.MemberMapper">
+
+	<!-- 회원정보를 전달받아 MEMBER 테이블에 삽입 -->
+	<insert id="insertMember">
+		insert into member values(#{mId},#{mPw},#{mName},#{mEmail},#{mPhone},1)
+	</insert>
+	
+	<!-- 회원정보를 전달받아 MEMBER 테이블에 저장된 회원정보 변경 -->
+	<update id="updateMember">
+		update member 
+		<set>
+			<if test="mPw!=null and mPw!=''">
+				m_pw=#{mPw},
+			</if>
+			<if test="mName!=null and mName!=''">
+				m_name=#{mName},
+			</if>
+			<if test="mEmail!=null and mEmail!=''">
+				m_email=#{mEmail},
+			</if>		
+			<if test="mPhone!=null and mPhone!=''">
+				m_phone=#{mPhone},
+			</if>		
+			<if test="mStatus==0 or mStatus==1">
+				m_status=#{mStatus}
+			</if>
+		</set>
+		where m_id=#{mId}
+	</update>
+
+	<!-- 변경 처리 -->
+	<!-- 아이디를 전달받아 MEMBER 테이블에 저장된 해당 아이디의 회원정보 검색 -->
+	<select id="selectMember" resultType="Member">
+		select * from member where m_id=#{mId}
+	</select>
+	<select id="selectEmailMember" resultType="Member">
+		select * from member where m_email=#{mEmail}
+	</select>
+
+	<!-- 탈퇴 처리 -->
+	<update id="removeMember">
+		update member
+		<set>
+			m_status==0
+		</set>
+		where m_id=${mId}
+	</update>
+	
+	
+	<!-- 회원정보를 전달받아 MEMBER 테이블에 저장된 회원정보 변경 -->
+	  <update id="updatePassword">
+	    UPDATE member
+	    SET m_pw = #{mPw}
+	    WHERE m_email = #{mEmail} and m_name = #{mName}
+	  </update>
+	  
+	  
+	  
+	  
+	  
+	<!-- 찜 리스트 -->  
+	
+	<insert id="insertHeart">
+		<selectKey resultType="int" keyProperty="hNo" order="BEFORE">
+			select heart_seq.nextval from dual
+		</selectKey>
+		insert into heart values
+			(#{hNo},#{hMid},#{hSid})
+	</insert>
+	  
+	<!-- 사용자 아이디를 전달받아 HEART 테이블에 저장된 모든 찜한 공간 목록을 검색 -->	 
+	<select id="selectHeartList" parameterType="string" resultType="Heart">
+		select * from heart where h_mid=#{hMid} order by h_sid desc
+	</select>
+	
+	<!-- HEART 테이블에 저장된 공간번호를 전달받아 공간정보를 검색 -->
+	<select id="selectHeartListInfo" parameterType="int" resultType="Heart">
+		select s_img,s_name,s_price from heart join space on h_sid=s_no where h_sid=#{hSid}
+	</select>
+	
+	<!-- 페이징 처리 & 검색 기능 구현 -->
+	<!-- => 게시글의 전체 갯수를 검색하여 반환하는 SQL 구문 -->
+	<select id="selectHeartCount" resultType="int">
+		select count(*) from heart where h_mid=#{hMid}
+	</select>
+	
+	<select id="selectHeartPaging" resultType="Space">
+		select * from (select rownum rn, heart.* from (select h_no,h_mid,h_sid,s_name,s_tag,s_price
+			from heart join space on h_sid=s_no 
+			where h_sid=#{hSid} order by h_no desc) heart) 
+			where rn between #{startRow} and #{endRow} and h_mid=#{hMid}
+	</select>
+	
+</mapper>

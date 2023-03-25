@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="xyz.itwill.mapper.PayMapper">
+	
+	<!-- 삽입 -->
+	<insert id="insertPay">
+		<selectKey resultType="int" keyProperty="pNo" order="BEFORE">
+			select pay_seq.nextval from dual
+		</selectKey>
+		insert into pay values(#{pNo},#{pRename},#{pRephone},#{pReemail},#{pRedate},
+		#{pRepeople},#{pPurpose},#{pRequest},#{pWay},sysdate,#{pMid},#{pSno},0,1,sysdate)
+	</insert>
+
+	<!-- 변경 : 전달값이 있을 때만 결제상태변경, 정산상태변경, 정산번호업데이트, 정산날짜 sysdate로 업데이트 --> 
+	<update id="updatePay">
+		update pay 
+		<set>
+			<if test="pStatus==0 or pStatus==1">
+				p_status=#{pStatus},
+			</if>
+			<if test="pWstatus==1 and pWstatus==0">
+				p_wstatus=#{pWstatus},
+			</if>
+			<if test="pWno!=null and pWno!=''">
+				p_wno=#{pWno},
+			</if>
+			<if test="pWstatus==0"> <!-- 정산이 된다면 정산날짜 업데이트 -->
+				p_wdate=sysdate
+			</if>
+		</set>
+		where p_no=#{pNo}
+	</update>
+	  
+	  
+	<!-- 삭제 없음 -->
+		
+	<!-- 검색 : Pay -->
+	<select id="selectPay" resultType="Pay">
+		select * from pay where p_no=#{pNo}
+	</select>
+	
+	
+	<!--정산 테이블 전체 갯수 반환.-->
+	<select id="selectPayCount" resultType="int">
+		select count(*) from pay
+	</select>
+	
+	<!-- 호스트 아이디를 전달받아 호스트에 해당하는 정산 테이블 전체 갯수 반환 -->
+	<select id="selectHostPayCount" resultType="int">
+		select count(*) from (select * from host left join (select * from pay join space on p_Sno=s_no) on h_id=s_hid where h_id=#{hId})
+	</select>
+	
+	<!-- 검색, 최신순, 페이징처리 : PayList -->	
+	<select id="selectPayList" resultType="Pay">
+		select * from (select rownum rn, paylist.* from (select * from pay order by p_no) paylist) where rn between #{startRow} and #{endRow}
+	</select>
+	
+	<resultMap type="Member" id="memberResultMap" autoMapping="true"/>
+ 	<resultMap type="Pay" id="payResultMap" autoMapping="true"/>
+	<resultMap type="Space" id="spaceResultMap" autoMapping="true" />
+	<resultMap type="host" id="hostResultMap" autoMapping="true"/>
+	
+	<resultMap type="PayMember" id="payMemberResultMap" autoMapping="true">
+		<association property="member" resultMap="memberResultMap" autoMapping="true"/>
+		<collection property="payList" resultMap="payResultMap" autoMapping="true"/>
+	</resultMap>
+
+	<resultMap type="SpaceHost" id="spaceHostResultMap" autoMapping="true">
+		<association property="host" resultMap="hostResultMap" autoMapping="true"/>
+		<collection property="spaceList" resultMap="spaceResultMap" autoMapping="true"/>
+	</resultMap>
+	
+	<resultMap type="SpacePay" id="spacePayResultMap" autoMapping="true">
+		<association property="space" resultMap="spaceResultMap" autoMapping="true"/>
+		<association property="pay" resultMap="payResultMap" autoMapping="true"/>
+	</resultMap>
+	
+	<resultMap type="HostSpacePay" id="hostSpacePayResultMap" autoMapping="true">
+		<association property="host" resultMap="hostResultMap" autoMapping="true"/>
+		<collection property="spacePayList" resultMap="spacePayResultMap" autoMapping="true"/>
+	</resultMap>
+	
+	<!-- 조인 Host(1):Space(1) 검색 이용하기 위해 이너 조인 사용 -->
+	<select id="selectSpaceHost" resultMap="spaceHostResultMap">
+		select * from host join space on h_id=s_hid 
+		 where s_no=#{sNo}
+	</select>
+	
+	<!-- 조인 member(1):pay(n) - PayList -->
+	<select id="selectMemberPayList" resultMap="payMemberResultMap">
+		select * from member left join pay on m_id=p_mid where p_mid=#{pMid} order by p_no desc
+	</select>
+	
+	<!-- 조인 Host(1): [Space(1) + Pay(1) ](n) 검색 이용하기 위해 아우터 조인 사용 -->
+	<select id="selectHostSpaceListPayList" resultMap="hostSpacePayResultMap">
+		select * from host left join (select * from pay join space on p_Sno=s_no) on h_id=s_hid where h_id=#{hId}
+	</select>
+	
+	<!-- 조인 Host(1): [Space(1) + Pay(1) ](n) 검색 이용하기 위해 아우터 조인 사용 + 검색, 최신순, 페이징처리 -->
+	<select id="selectHostSpaceListPayListByRow" resultMap="hostSpacePayResultMap">
+		select * from (select rownum rn, paylist.* from 
+			(select * from host left join (select * from pay join space on p_Sno=s_no) on h_id=s_hid where h_id=#{hId}) paylist) 
+				where rn between #{startRow} and #{endRow}
+	</select>	
+
+		 
+</mapper>
+
+
+

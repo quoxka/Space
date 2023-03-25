@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE tiles-definitions PUBLIC "//Apache Software Foundation//DTD Tiles Configuration 3.0/EN"
+	"http://tiles.apache.org/dtds/tiles-config_3_0.dtd">
+<tiles-definitions>
+
+	
+	<!-- 
+	<definition name="admin" extends="home">
+		<put-attribute name="header" value="/WEB-INF/views/layout/admin_header.jsp"/>
+		<put-attribute name="content" value="/WEB-INF/views/layout/admin_main.jsp"/>
+	</definition>
+	-->	
+	
+	<!-- 관리자 로그인 -->
+	<definition name="admin" template="/WEB-INF/views/layout/admin_home.jsp">
+		<put-attribute name="header" value="/WEB-INF/views/layout/admin_header.jsp"/>
+		<put-attribute name="content" value="/WEB-INF/views/layout/admin_main.jsp"/>
+	</definition> 
+	
+ 
+	<!-- 일반 guest -->
+	<definition name="home" template="/WEB-INF/views/home.jsp">
+		<put-attribute name="header" value="/WEB-INF/views/layout/header.jsp"/>
+		<put-attribute name="content" value="/WEB-INF/views/layout/main.jsp"/>
+		<put-attribute name="footer" value="/WEB-INF/views/layout/footer.jsp"/>
+	</definition>
+	
+
+	<!-- 호스트 회원 -->
+	<definition name="host" template="/WEB-INF/views/layout/host_home.jsp">
+		<put-attribute name="header" value="/WEB-INF/views/layout/host_header.jsp"/>
+		<put-attribute name="content" value="/WEB-INF/views/layout/host_main.jsp"/>
+		<put-attribute name="footer" value="/WEB-INF/views/layout/footer.jsp"/>
+	</definition> 
+	
+	
+	<definition name="admin/*" extends="admin">
+		<put-attribute name="content" value="/WEB-INF/views/admin/{1}.jsp"/>
+	</definition>
+	
+	<definition name="admin/*/*" extends="admin">
+		<put-attribute name="content" value="/WEB-INF/views/admin/{1}/{2}.jsp"/>
+	</definition>
+
+
+	
+	
+	
+	<definition name="host/*" extends="host">
+		<put-attribute name="content" value="/WEB-INF/views/host/{1}.jsp"/>
+	</definition> 
+	<definition name="host/*/*" extends="host">
+		<put-attribute name="content" value="/WEB-INF/views/host/{1}/{2}.jsp"/>
+	</definition> 
+
+
+
+
+
+		<definition name="*" extends="home">
+		<put-attribute name="content" value="/WEB-INF/views/{1}.jsp"/>
+	</definition>
+
+	<definition name="*/*" extends="home">
+		<put-attribute name="content" value="/WEB-INF/views/{1}/{2}.jsp"/>
+		
+	</definition>
+
+	
+</tiles-definitions>	

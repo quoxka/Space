@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="xyz.itwill.mapper.SpaceSelectMapper">
+ 
+ 	<!-- 한명의 호스트가 선택한 공간을 출력 -->
+ 	<!-- sNo에 해당하는 Space에 대한 정보를 출력 -->
+	 
+    <select id="selectSpaceBySNo" resultType="Space">
+   		SELECT s_no, s_name, s_price, s_person, s_heart, s_img, s_map, s_tag, h_id, h_name
+  		FROM host LEFT OUTER JOIN space
+  		ON h_id =s_hid AND s_no = #{sNo}
+  		WHERE h_id = #{hId}
+    </select>
+      <!-- 
+     <select id="selectSpaceBySNo" resultMap="SpaceH">
+   		SELECT s_no, s_name, s_price, s_person, s_heart, s_img, s_map, s_tag, h_id, h_name
+  		FROM host LEFT OUTER JOIN space
+  		ON h_id =s_hid AND s_no = #{sNo}
+  		WHERE h_id = #{hId}
+    </select>
+     -->
+    
+    <select id="selectSpaceBySnoTest" resultType="Space">
+  		SELECT * FROM space WHERE s_no = #{sNo}
+	</select>
+    
+	
+	<!-- 호스트의 다른 공간을 출력 : SpaceList와 Host -->
+	<resultMap type="Space" id="spaceResultMap">
+	 	<id column="s_no" property="sNo"/>
+		<result column="s_name" property="sName"/>
+		<result column="s_price" property="sPrice"/>
+		<result column="s_person" property="sPerson"/>
+		<result column="s_heart" property="sHeart"/>
+		<result column="s_img" property="sImg"/>
+		<result column="s_map" property="sMap"/>
+		<result column="s_tag" property="sTag"/>
+	 </resultMap>	 
+	 
+	<resultMap type="host" id="hostResultMap">
+	 	<id column="h_id" property="hId"/>
+		<result column="h_name" property="hName"/>
+		<result column="h_email" property="hEmail"/>
+		<result column="h_phone" property="hPhone"/>
+		<result column="h_spacename" property="hSpacename"/>
+		<result column="h_ceoname" property="hCeoname"/>
+		<result column="h_num" property="hNum"/>
+		<result column="h_account" property="hAccount"/>
+		<result column="h_bank" property="hBank"/>
+		<result column="h_accountname" property="hAccountname"/>
+	 </resultMap>
+	
+	<resultMap type="SpaceHost" id="spaceHostResultMap" autoMapping="true">
+		<association property="host" resultMap="hostResultMap" autoMapping="true"/>
+		<collection property="spaceList" resultMap="spaceResultMap" autoMapping="true"/>
+	</resultMap>
+	
+	<!-- 
+	<resultMap type="SpaceH" id="spaceHResultMap" autoMapping="true">
+		<association property="host" resultMap="hostResultMap" autoMapping="true"/>
+		<association property="space" resultMap="spaceResultMap" autoMapping="true"/>
+	</resultMap>	
+	-->
+	
+	<!-- 한명의 호스트가 선택한 공간을 제외한 모든 공간을 출력 -->
+	<select id="selectSpaceHost" resultMap="spaceHostResultMap">
+		SELECT s_no, s_name, s_price, s_person, s_heart, s_img, s_map, s_tag, h_id, h_name
+  		FROM host LEFT OUTER JOIN space
+  		ON h_id =s_hid AND s_no != #{sNo}
+   		WHERE h_id = #{hId}
+   		ORDER BY s_no DESC
+	</select>
+	
+</mapper>
